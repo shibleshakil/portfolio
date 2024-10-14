@@ -7,6 +7,7 @@ use App\Models\Project;
 use App\Models\Skill;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Redirect;
+use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 
 class ProjectController extends Controller
@@ -38,24 +39,23 @@ class ProjectController extends Controller
 
         $request->validate([
             'skill_id' => ['required'],
-            'name' => ['required', 'min:4'],
+            'name' => ['required', 'min:3'],
             'image' => ['nullable', 'image'],
         ]);
 
+        $image = NULL;
         if ($request->hasFile('image')) {
             $image = $request->file('image')->store('projects');
-
-            Project::create([
-                'skill_id' => $request->skill_id,
-                'name' => $request->name,
-                'image' => $image,
-                'project_url' => $request->project_url
-            ]);
-
-            return Redirect::route('projects.index');
         }
+        Project::create([
+            'skill_id' => $request->skill_id,
+            'name' => $request->name,
+            'image' => $image,
+            'project_url' => $request->project_url
+        ]);
 
-        return Redirect::back();
+        return Redirect::route('projects.index')->with('message', 'Project Created Successfully');
+
     }
 
     /**
@@ -69,24 +69,52 @@ class ProjectController extends Controller
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(string $id)
+    public function edit(Project $project)
     {
-        //
+        $skills = Skill::all();
+        return Inertia::render('Projects/Edit', compact('project', 'skills'));
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, string $id)
+    public function update(Request $request, Project $project)
     {
-        //
+        $request->validate([
+            'skill_id' => ['required'],
+            'name' => ['required', 'min:3'],
+            'image' => ['nullable', 'image'],
+        ]);
+
+        $image = $project->image;
+
+        if ($request->hasFile('image')) {
+            if ($project->image && Storage::exists($project->image)) {
+                Storage::delete($project->image);
+            }
+            $image = $request->file('image')->store('skills');
+        }
+
+        $project->update([
+            'skill_id' => $request->skill_id,
+            'name' => $request->name,
+            'image' => $image,
+            'project_url' => $request->project_url
+        ]);
+
+        return Redirect::route('projects.index')->with('message', 'Project Updated Successfully');
     }
 
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(string $id)
+    public function destroy(Project $project)
     {
-        //
+        if ($project->image && Storage::exists($project->image)) {
+            Storage::delete($project->image);
+        }
+
+        $project->delete();
+        return Redirect::route('projects.index')->with('message', 'Project Deleted Successfully');
     }
 }

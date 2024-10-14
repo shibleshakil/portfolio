@@ -46,7 +46,7 @@ class SkillController extends Controller
                 'image' => $image
             ]);
 
-            return Redirect::route('skills.index');
+            return Redirect::route('skills.index')->with('message', 'Skill Created Successfully');
         }
 
         return Redirect::back();
@@ -81,7 +81,9 @@ class SkillController extends Controller
 
 
         if ($request->hasFile('image')) {
-            Storage::delete($skill->image);
+            if ($skill->image && Storage::exists($skill->image)) {
+                Storage::delete($skill->image);
+            }
             $image = $request->file('image')->store('skills');
         }
 
@@ -90,7 +92,7 @@ class SkillController extends Controller
             'image' => $image,
         ]);
 
-        return Redirect::route('skills.index');
+        return Redirect::route('skills.index')->with('message', 'Skill Updated Successfully');
 
 
     }
@@ -100,8 +102,10 @@ class SkillController extends Controller
      */
     public function destroy(Skill $skill)
     {
-        Storage::delete($skill->image);
+        if ($skill->image && Storage::exists($skill->image)) {
+            Storage::delete($skill->image);
+        }
         $skill->delete();
-        return Redirect::route('skills.index');
+        return Redirect::route('skills.index')->with('message', 'Skill Deleted Successfully');
     }
 }
