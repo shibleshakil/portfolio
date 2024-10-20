@@ -21,7 +21,7 @@
             ">
                 <span class="block">Ready to dive in?</span>
                 <span class="block text-dark-primary dark:text-white">
-                    Laravel POS For your Supershop
+                    Laravel POS
                 </span>
             </h2>
             <div class="mt-8 flex lg:mt-0 lg:flex-shrink-0">
